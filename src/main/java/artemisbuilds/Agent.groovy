@@ -1,3 +1,4 @@
+// agent configuration
 package artemisbuilds
 
 import groovy.yaml.Yaml

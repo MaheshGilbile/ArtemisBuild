@@ -1,4 +1,4 @@
-@Library('your-shared-library') _
+@Library('ArtemisBuilds') _
 
 def yamlFilePath = 'path/to/your/config.yaml'
 
