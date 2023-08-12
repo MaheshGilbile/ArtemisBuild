@@ -1,3 +1,5 @@
+package artemisbuilds
+
 import groovy.yaml.Yaml
 import groovy.json.JsonSlurperClassic
 
