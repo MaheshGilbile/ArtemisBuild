@@ -1,0 +1,24 @@
+name: app1
+Ecosystem: app1
+Agent: mydockeragent
+Build:
+  Techno: mvn
+  BuildOptions: '-s settings.xml'
+  ArtifactoryDeploy: True
+Sonar:
+  SonarID: app1
+  SonarCredentials: sonar-api-key
+SecurityScan:
+  SAST: True
+  SASTConfig:
+  RefVersion: 1.0.0
+  TargetVersion: refer from pom.xml for maven or nuget.spec file for dotnet
+  CustomTargetVersion: 2.0.0
+    SCA: True
+Deploy:
+  skip: true
+  agent: myansibleagent
+  environmentList: [dev, uat,prod]
+  defaultEnv: dev
+  AnsibleRepo: deployment
+  AnsibleRepoBranch: main
