@@ -10,7 +10,20 @@ def call(securityScanConfig, buildTechno) {
                 }
 
                 if (scaEnabled) {
-                    nexusIQ()
+
+                        def fileExtension
+                        if (buildTechno == 'mvn') {
+                            def artifactPath = "${WORKSPACE}/target"
+                            fileExtension = extractArtifactExtensionFromPom(artifactPath)
+                        } else if (buildTechno == 'dotnet') {
+                            def artifactPath = "${WORKSPACE}/bin/Debug" // Adjust this path based on your .NET project's build output location
+                            fileExtension = 'nupkg'
+                        } else {
+                            error "Unsupported build technology: ${buildTechno}"
+                        }
+
+                        nexusIQScan(artifactPath, fileExtension)
+
                 }
             }
         }
@@ -35,12 +48,17 @@ def fortifyScan(){
 
     sh "fortifycommand ${refVersion} ${targetVersion}"
 }
-def nexusIQ() {
+
+def extractArtifactExtensionFromPom(artifactPath) {
+    def pomXml = readFile(artifactPath + '/pom.xml')
+    def extensionMatch = pomXml =~ /<packaging>(.*?)<\/packaging>/
+    return extensionMatch ? extensionMatch[0][1] : 'jar'
+}
+def nexusIQScan(artifactPath, fileExtension) {
     stage('Nexus IQ Scan') {
         steps {
             script {
-                // Run Nexus IQ scan command
-                sh 'nexus-iq-command'
+                sh "java -jar nexusiq.jar scan -f ${artifactPath}.${fileExtension}"
             }
         }
     }
