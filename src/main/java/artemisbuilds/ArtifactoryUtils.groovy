@@ -1,5 +1,8 @@
 package artemisbuilds
 
+import org.jfrog.artifactory.client.Artifactory
+import org.jfrog.buildinfo.Config
+
 class ArtifactoryUtils {
     static def uploadMavenArtifact() {
         def server = Artifactory.server('my-artifactory-server') // Replace with your server ID
@@ -33,7 +36,7 @@ class ArtifactoryUtils {
 
         buildInfo.env.capture = true
         buildInfo.name = 'my-build'
-        buildInfo.number = env.BUILD_NUMBER
+        buildInfo.number = ${env.BUILD_NUMBER}
 
         server.publishBuildInfo(buildInfo)
     }
@@ -58,7 +61,7 @@ class ArtifactoryUtils {
 
         buildInfo.env.capture = true
         buildInfo.name = 'my-build'
-        buildInfo.number = env.BUILD_NUMBER
+        buildInfo.number = ${env.BUILD_NUMBER}
 
         server.publishBuildInfo(buildInfo)
     }
@@ -91,7 +94,7 @@ class ArtifactoryUtils {
 
         buildInfo.env.capture = true
         buildInfo.name = 'my-build'
-        buildInfo.number = env.BUILD_NUMBER
+        buildInfo.number = ${env.BUILD_NUMBER}
 
         server.publishBuildInfo(buildInfo)
     }

@@ -1,3 +1,4 @@
+package artemisbuilds
 import groovy.mock.interceptor.MockFor
 import org.junit.Test
 
