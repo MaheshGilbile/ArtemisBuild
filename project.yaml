@@ -3,13 +3,14 @@ Ecosystem: app1
 Agent: mydockeragent
 Build:
   Techno: mvn
-  BuildOptions: '-s settings.xml'
-  ArtifactoryDeploy: True
+    BuildOptions: '-s settings.xml'
   Techno: dotnet
-  SlnFileName: myproject.sln
+    SlnFileName: myproject.sln
+  ArtifactoryDeploy: True
 Sonar:
   SonarID: app1
   SonarCredentials: sonar-api-key
+  SonarOptions: [JAVA_HOME=/app/jdk1.8, CPU=3]
 SecurityScan:
   SAST: True
   SASTConfig:

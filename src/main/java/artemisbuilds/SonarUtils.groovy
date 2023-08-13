@@ -1,6 +1,9 @@
+import hudson.plugins.sonar.SonarGlobalConfiguration
 def call(sonarConfig, buildTechno) {
     def sonarID = sonarConfig.SonarID
     def sonarCredentials = sonarConfig.SonarCredentials
+    def sonarOptions = sonarConfig.SonarOptions
+
 
     stage('Sonar Analysis') {
         steps {
@@ -8,15 +11,30 @@ def call(sonarConfig, buildTechno) {
                 def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
                 def sonarCmd = ''
 
-                if (buildTechno == 'mvn') {
-                    sonarCmd = "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${sonarID} -Dsonar.login=${sonarCredentials}"
-                } else if (buildTechno == 'dotnet') {
-                    sonarCmd = "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${sonarID} -Dsonar.login=${sonarCredentials} -Dsonar.cs.dotcover.reportsPaths=**/coverage.xml"
-                } else {
-                    error "Unsupported build technology: ${buildTechno}"
-                }
+                def sonarScannerOpts = [
+                        projectKey: sonarID,
+                        credentialsId: sonarCredentials,
+                ]
 
-                sh sonarCmd
+                withSonarQubeEnv('SonarQubeServer') {
+                    if (buildTechno == 'mvn') {
+                        sonarScannerOpts += [
+                                extraProperties: "sonar.cs.dotcover.reportsPaths=**/coverage.xml"
+                        ]
+                    } else if (buildTechno == 'dotnet') {
+                        sonarScannerOpts += [
+                                extraProperties: "sonar.cs.dotcover.reportsPaths=**/coverage.xml"
+                        ]
+                    } else {
+                        error "Unsupported build technology: ${buildTechno}"
+                    }
+
+                    sonarScannerOpts.each { key, value ->
+                        sonarCmd += "-D${key}=${value} "
+                    }
+
+                    sh "${scannerHome}/bin/sonar-scanner ${sonarCmd}"
+                }
             }
         }
     }
