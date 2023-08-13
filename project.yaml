@@ -5,6 +5,8 @@ Build:
   Techno: mvn
   BuildOptions: '-s settings.xml'
   ArtifactoryDeploy: True
+  Techno: dotnet
+  SlnFileName: myproject.sln
 Sonar:
   SonarID: app1
   SonarCredentials: sonar-api-key

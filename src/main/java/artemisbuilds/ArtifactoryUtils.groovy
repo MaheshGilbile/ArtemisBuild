@@ -2,6 +2,7 @@ package artemisbuilds
 
 import org.jfrog.artifactory.client.Artifactory
 import org.jfrog.buildinfo.Config
+import artemisbuilds.LoggerUtil
 
 class ArtifactoryUtils {
     static def uploadMavenArtifact() {
@@ -13,7 +14,7 @@ class ArtifactoryUtils {
             logger.logError("Neither CSPROJ nor Nuget.Spec not found for Dotnet build.")
         }
 
-        def pomXml = readFile("${workspace}/pom.xml")
+        def pomXml = readFile("${WORKSPACE}/pom.xml")
         def packagingMatcher = (pomXml =~ /<packaging>(.*?)<\/packaging>/)
         def packagingType = packagingMatcher ? packagingMatcher[0][1] : 'jar'
 

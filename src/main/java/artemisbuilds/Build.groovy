@@ -5,9 +5,10 @@ import artemisbuilds.LoggerUtil
 def call(buildConfig) {
     def buildTechno = buildConfig.Techno
     def buildOptions = buildConfig.BuildOptions
-    def artifactoryDeploy = buildConfig.ArtifactoryDeploy
-    @GrabResolver(name='LoggerUtil', root='http://<LOGGERUTIL_REPO_URL>/libs-release')
-    @Grab(group='com.yourcompany', module='LoggerUtil', version='1.0.0')
+
+    def slnFileName = buildConfig.SlnFileName
+   // @GrabResolver(name='LoggerUtil', root='http://<LOGGERUTIL_REPO_URL>/libs-release')
+   // @Grab(group='com.yourcompany', module='LoggerUtil', version='1.0.0')
     def logger = new artemisbuilds.LoggerUtil()
     if (buildTechno == 'mvn') {
         stage('Generate Settings.xml') {
@@ -39,32 +40,20 @@ def call(buildConfig) {
                         logger.logError("pom.xml not found for Maven build.")
                     }
                     sh "mvn clean install ${buildOptions} -s settings.xml"
-                    if (artifactoryDeploy) {
-                        logger.logInfo("Uploading Maven artifact to Artifactory...")
-                        ArtifactoryUtils.uploadMavenArtifact()
-                        logger.logInfo("Maven artifact upload completed.")
-                    }
+
                 } else if (buildTechno == 'npm') {
                     if (!fileExists('package.json') || !fileExists('package-lock.json')) {
                         logger.logError("package.json or package-lock.json not found for npm build.")
                     }
                     sh "npm install"
                     sh "npm run build"
-                    if (artifactoryDeploy) {
-                        logger.logInfo("Uploading NPM artifact to Artifactory...")
-                        ArtifactoryUtils.uploadNpmArtifact()
-                        logger.logInfo("NPM artifact upload completed.")
-                    }
+
                 } else if (buildTechno == 'dotnet') {
-                    if (!fileExists('.sln') || !fileExists('nuget.spec')) {
+                    if (!fileExists('${slnFileName}') || !fileExists('nuget.spec')) {
                         logger.logError(".sln or nuget.spec not found for .NET build.")
                     }
-                    sh "dotnet build"
-                    if (artifactoryDeploy) {
-                        logger.logInfo("Uploading Dotnet artifact to Artifactory...")
-                        ArtifactoryUtils.uploadDotnetArtifact()
-                        logger.logInfo("Dotnet artifact upload completed.")
-                    }
+                    bat "dotnet build"
+
                 } else {
                     logger.logError("Unsupported build technology: ${buildTechno}")
                 }
@@ -140,6 +129,6 @@ def generateNugetConfig(appName, credentialsId) {
     bat "nuget restore ${solutionfilePath} -Configfile ${WORKSPACE}\\nuget.config"
 }
 // Import ArtifactoryUtils class
-@GrabResolver(name='Artifactory', root='http://<ARTIFACTORY_URL>/libs-release')
-@Grab(group='com.yourcompany', module='ArtifactoryUtils', version='1.0.0')
+//@GrabResolver(name='Artifactory', root='http://<ARTIFACTORY_URL>/libs-release')
+//@Grab(group='com.yourcompany', module='ArtifactoryUtils', version='1.0.0')
 import artemisbuilds.ArtifactoryUtils

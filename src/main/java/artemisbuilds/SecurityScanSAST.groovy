@@ -1,8 +1,8 @@
 package artemisbuilds
 import artemisbuilds.LoggerUtil
-def logger = new artemisbuilds.LoggerUtil()
 def call(securityScanConfig, buildTechno, branchName) {
-        def sastEnabled = securityScanConfig.SAST
+    def logger = new artemisbuilds.LoggerUtil()
+    def sastEnabled = securityScanConfig.SAST
 
         stage('Security Scan SAST') {
             when {

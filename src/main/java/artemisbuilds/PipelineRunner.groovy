@@ -1,4 +1,4 @@
-// agent configuration
+// PipelineRunner configuration
 package artemisbuilds
 
 import org.yaml.snakeyaml.Yaml
@@ -10,8 +10,7 @@ def call(yamlFilePath) {
         error "Configuration file not found: ${yamlFilePath}"
     }
 
-    def config = new Yaml().load(configFile)
-
+    def config = new Yaml().load(new File(configFile))
     def appName = config.name
     def agentConfig = config.Agent
     def buildConfig = config.Build
@@ -50,7 +49,7 @@ def call(yamlFilePath) {
                 }
                 steps {
                     script {
-                        appName.Sonar(sonarConfig)
+                        appName.SonarUtils(sonarConfig)
                     }
                 }
             }
@@ -61,6 +60,16 @@ def call(yamlFilePath) {
                 steps {
                     script {
                         appName.SecurityScanSCA(securityScanConfig)
+                    }
+                }
+            }
+            stage('ArtifactoryUpload') {
+                agent {
+                    label agentConfig
+                }
+                steps {
+                    script {
+                        appName.ArtifactoryUpload(buildConfig)
                     }
                 }
             }

@@ -15,7 +15,7 @@ pipeline {
         stage('Initialize') {
             steps {
                 script {
-                    appName.Agent('path/to/your/config.yaml')
+                    appName.PipelineRunner('path/to/your/config.yaml')
                 }
             }
         }
