@@ -1,59 +1,145 @@
+package artemisbuilds
+
+import artemisbuilds.LoggerUtil
+
 def call(buildConfig) {
     def buildTechno = buildConfig.Techno
     def buildOptions = buildConfig.BuildOptions
     def artifactoryDeploy = buildConfig.ArtifactoryDeploy
-
-    stage('Build') {
-        steps {
-            script {
-                switch (buildTechno) {
-                    case 'mvn':
-                        // Maven build
-                        sh "mvn clean install ${buildOptions}"
-                        break
-                    case 'npm':
-                        // npm build
-                        sh "npm install"
-                        sh "npm run build"
-                        break
-                    case 'dotnet':
-                        // .NET build
-                        sh "dotnet build"
-                        break
-                    default:
-                        error "Unsupported build technology: ${buildTechno}"
+    @GrabResolver(name='LoggerUtil', root='http://<LOGGERUTIL_REPO_URL>/libs-release')
+    @Grab(group='com.yourcompany', module='LoggerUtil', version='1.0.0')
+    def logger = new artemisbuilds.LoggerUtil()
+    if (buildTechno == 'mvn') {
+        stage('Generate Settings.xml') {
+            steps {
+                script {
+                    if (buildOptions.contains("-s settings.xml")) {
+                        generateSettingsXml(buildConfig.name, 'artifactory-service-account')
+                    }
                 }
             }
         }
     }
 
-    if (artifactoryDeploy) {
-        stage('Artifactory Deploy') {
+    if (buildTechno == 'dotnet') {
+        stage('Generate Nuget.config') {
             steps {
                 script {
-                    def server = Artifactory.server('my-artifactory-server') // Replace with your server ID
-                    def buildInfo = Artifactory.newBuildInfo()
+                    generateNugetConfig(buildConfig.name, 'artifactory-service-account')
+                }
+            }
+        }
+    }
 
-                    def uploadSpec = """{
-                        "files": [
-                            {
-                                "pattern": "target/*.jar", // Replace with the appropriate file pattern
-                                "target": "my-repo-local/"
-                            }
-                        ]
-                    }"""
-
-                    def uploadSpecFile = writeTempFile(uploadSpec)
-
-                    server.upload(uploadSpecFile, buildInfo)
-
-                    buildInfo.env.capture = true
-                    buildInfo.name = 'my-build'
-                    buildInfo.number = env.BUILD_NUMBER
-
-                    server.publishBuildInfo(buildInfo)
+    stage('Build') {
+        steps {
+            script {
+                if (buildTechno == 'mvn') {
+                    if (!fileExists('pom.xml')) {
+                        logger.logError("pom.xml not found for Maven build.")
+                    }
+                    sh "mvn clean install ${buildOptions} -s settings.xml"
+                    if (artifactoryDeploy) {
+                        logger.logInfo("Uploading Maven artifact to Artifactory...")
+                        ArtifactoryUtils.uploadMavenArtifact()
+                        logger.logInfo("Maven artifact upload completed.")
+                    }
+                } else if (buildTechno == 'npm') {
+                    if (!fileExists('package.json') || !fileExists('package-lock.json')) {
+                        logger.logError("package.json or package-lock.json not found for npm build.")
+                    }
+                    sh "npm install"
+                    sh "npm run build"
+                    if (artifactoryDeploy) {
+                        logger.logInfo("Uploading NPM artifact to Artifactory...")
+                        ArtifactoryUtils.uploadNpmArtifact()
+                        logger.logInfo("NPM artifact upload completed.")
+                    }
+                } else if (buildTechno == 'dotnet') {
+                    if (!fileExists('.sln') || !fileExists('nuget.spec')) {
+                        logger.logError(".sln or nuget.spec not found for .NET build.")
+                    }
+                    sh "dotnet build"
+                    if (artifactoryDeploy) {
+                        logger.logInfo("Uploading Dotnet artifact to Artifactory...")
+                        ArtifactoryUtils.uploadDotnetArtifact()
+                        logger.logInfo("Dotnet artifact upload completed.")
+                    }
+                } else {
+                    logger.logError("Unsupported build technology: ${buildTechno}")
                 }
             }
         }
     }
 }
+
+def fileExists(fileName) {
+    return new File(fileName).exists()
+}
+
+def generateSettingsXml(appName, credentialsId) {
+    def settingsXmlContent = """
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <localRepository>${env.MAVEN_LOCAL_REPO}</localRepository>
+            <mirrors>
+                <mirror>
+                    <id>artifactory</id>
+                    <mirrorOf>*</mirrorOf>
+                    <url>http://artifactory.project.com/artifactory/${appName}-maven</url>
+                </mirror>
+            </mirrors>
+            <pluginGroups>
+                <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+            </pluginGroups>
+            <servers>
+                <server>
+                    <id>artifactory</id>
+                    <username>${withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) { username }}</username>
+                    <password>${withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) { password }}</password>
+                </server>
+            </servers>
+            <profiles>
+                <profile>
+                    <id>artifactory</id>
+                    <activation>
+                        <activeByDefault>true</activeByDefault>
+                    </activation>
+                    <repositories>
+                        <repository>
+                            <id>central</id>
+                            <url>https://central</url>
+                            <snapshots>
+                                <enabled>true</enabled>
+                            </snapshots>
+                        </repository>
+                    </repositories>
+                    <pluginRepositories>
+                        <pluginRepository>
+                            <id>central</id>
+                            <url>https://central</url>
+                            <snapshots>
+                                <enabled>true</enabled>
+                            </snapshots>
+                        </pluginRepository>
+                    </pluginRepositories>
+                </profile>
+            </profiles>
+        </settings>
+    """
+    writeFile file: '${env.WORKSPACE}/settings.xml', text: settingsXmlContent
+}
+
+def generateNugetConfig(appName, credentialsId) {
+    username = "${withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) { username }}"
+    password = "${withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) { password }}"
+    writeFile file: '${env.WORKSPACE}\\nuget.config', text: "<?xml version=\"1.0\" econding=\"utf-8\"?>\n<configuration>\n</configuration>"
+    bat "nuget Source Add -Name ${appName}-nuget - Source https://artifactory.project.com/artifactory/api/nuget/v3/${appName}-nuget -UserName ${username} -Password ${password} -ConfigFile ${WORKSPACE}\\nuget.config}"
+    bat "nuget local all -clear -Configfile ${WORKSPACE}\\nuget.config\n"
+    bat "nuget restore ${solutionfilePath} -Configfile ${WORKSPACE}\\nuget.config"
+}
+// Import ArtifactoryUtils class
+@GrabResolver(name='Artifactory', root='http://<ARTIFACTORY_URL>/libs-release')
+@Grab(group='com.yourcompany', module='ArtifactoryUtils', version='1.0.0')
+import artemisbuilds.ArtifactoryUtils

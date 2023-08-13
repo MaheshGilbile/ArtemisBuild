@@ -1,4 +1,5 @@
-import groovy.yaml.Yaml
+package artemisbuilds
+import org.yaml.snakeyaml.Yaml
 
 def validateYaml(yamlFilePath) {
     def configFile = new File(yamlFilePath)

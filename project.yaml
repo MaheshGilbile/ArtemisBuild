@@ -11,10 +11,10 @@ Sonar:
 SecurityScan:
   SAST: True
   SASTConfig:
-  RefVersion: 1.0.0
-  TargetVersion: refer from pom.xml for maven or nuget.spec file for dotnet
-  CustomTargetVersion: 2.0.0
-    SCA: True
+    RefVersion: 1.0.0
+    TargetVersion: refer from pom.xml for maven or nuget.spec file for dotnet
+    CustomTargetVersion: 2.0.0
+  SCA: True
 Deploy:
   skip: true
   agent: myansibleagent

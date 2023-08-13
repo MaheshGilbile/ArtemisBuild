@@ -1,8 +1,7 @@
 // agent configuration
 package artemisbuilds
 
-import groovy.yaml.Yaml
-import groovy.json.JsonSlurperClassic
+import org.yaml.snakeyaml.Yaml
 
 def call(yamlFilePath) {
     def configFile = new File(yamlFilePath)
@@ -25,31 +24,43 @@ def call(yamlFilePath) {
             label agentConfig
         }
         stages {
-            stage('Build, Sonar, SecurityScan') {
+            stage('SecurityScanSAST') {
                 agent {
                     label agentConfig
                 }
-                stages {
-                    stage('Build') {
-                        steps {
-                            script {
-                                appName.Build(buildConfig)
-                            }
-                        }
+                steps {
+                    script {
+                        appName.SecurityScanSAST(securityScanConfig)
                     }
-                    stage('Sonar') {
-                        steps {
-                            script {
-                                appName.Sonar(sonarConfig)
-                            }
-                        }
+                }
+            }
+            stage('Build') {
+                agent {
+                    label agentConfig
+                }
+                steps {
+                    script {
+                        appName.Build(buildConfig)
                     }
-                    stage('SecurityScan') {
-                        steps {
-                            script {
-                                appName.SecurityScan(securityScanConfig)
-                            }
-                        }
+                }
+            }
+            stage('Sonar') {
+                agent {
+                    label agentConfig
+                }
+                steps {
+                    script {
+                        appName.Sonar(sonarConfig)
+                    }
+                }
+            }
+            stage('SecurityScanSCA') {
+                agent {
+                    label agentConfig
+                }
+                steps {
+                    script {
+                        appName.SecurityScanSCA(securityScanConfig)
                     }
                 }
             }

@@ -1,3 +1,5 @@
+package artemisbuilds
+
 def call(securityScanConfig, buildTechno) {
     def sastEnabled = securityScanConfig.SAST
     def scaEnabled = securityScanConfig.SCA
