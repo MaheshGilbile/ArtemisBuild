@@ -10,6 +10,7 @@ def call(buildConfig) {
     def mavenBuild = new artemisbuilds.MavenBuild()
     def npmBuild = new artemisbuilds.NpmBuild()
     def dotnetBuild = new artemisbuilds.DotnetBuild()
+    def sqlBuild = new artemisbuilds.SQLBuild()
 
     if (buildTechno == 'mvn') {
         mavenBuild.build(buildConfig)
@@ -17,6 +18,8 @@ def call(buildConfig) {
         npmBuild.build(buildConfig)
     } else if (buildTechno == 'dotnet') {
         dotnetBuild.build(buildConfig)
+    } else if (buildTechno == 'sql') {
+        sqlBuild.build(buildConfig)
     } else {
         logger.logError("Unsupported build technology: ${buildTechno}")
         currentBuild.result = 'FAILURE' // Mark the build as failed

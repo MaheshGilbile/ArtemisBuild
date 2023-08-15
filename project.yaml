@@ -7,6 +7,8 @@ Build:
   Techno: dotnet
     SlnFileName: myproject.sln
   ArtifactoryDeploy: True
+  Techno: sql
+    localPath: apps/sql
 Sonar:
   SonarID: app1
   SonarCredentials: sonar-api-key
