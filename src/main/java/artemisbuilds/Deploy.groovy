@@ -4,6 +4,7 @@ def call(deployConfig) {
     def appName = deployConfig.name
     def ansibleRepo = deployConfig.AnsibleRepo
     def ansibleRepoBranch = deployConfig.AnsibleRepoBranch
+    def ansibleDeploymentThroughAPI = deployConfig.AnsibleDeploymentThroughAPI
     def skipDeployment = deployConfig.skip
 
     pipeline {
@@ -16,7 +17,11 @@ def call(deployConfig) {
                     script {
                         if (!skipDeployment) {
                             def deployEnvironment = getInputAndCheck(deployConfig)
-                            checkoutAndDeploy(deployEnvironment)
+                            if (ansibleDeploymentThroughAPI) {
+                                ansibleApiDeploy(deployEnvironment)
+                            } else {
+                                checkoutAndDeploy(deployEnvironment)
+                            }
                         }
                     }
                 }
@@ -24,6 +29,47 @@ def call(deployConfig) {
         }
     }
 }
+
+def ansibleApiDeploy(deployEnvironment) {
+    stage('Ansible Deployment using API') {
+        steps {
+            script {
+                def towerBaseUrl = 'https://your-ansible-tower-url' // Replace with your Ansible Tower URL
+                def towerUsername = 'your-ansible-tower-username'
+                def towerPassword = 'your-ansible-tower-password'
+                def towerJobTemplateId = 123 // Replace with the ID of your Ansible Tower job template
+
+                def authHeader = 'Basic ' + "${towerUsername}:${towerPassword}".bytes.encodeBase64().toString()
+
+                def requestBody = [
+                        inventory: deployEnvironment, // Use the provided inventory for deployment
+                ]
+
+                def response = httpRequest(
+                        acceptType: 'APPLICATION_JSON',
+                        contentType: 'APPLICATION_JSON',
+                        httpMode: 'POST',
+                        consoleLogResponseBody: true,
+                        requestBody: requestBody,
+                        url: "${towerBaseUrl}/api/v2/job_templates/${towerJobTemplateId}/launch/",
+                        customHeaders: [
+                                Authorization: authHeader,
+                        ]
+                )
+
+                if (response.status != 201) {
+                    error "Failed to trigger Ansible Tower job: ${response.status} - ${response.content}"
+                }
+
+                def towerJobId = response.data.id
+
+                // You might want to add logic here to wait for the Tower job to complete
+                waitForJobCompletion(towerJobId)
+            }
+        }
+    }
+}
+
 
 def getInputAndCheck(deployConfig) {
     def environmentList = deployConfig.environmentList

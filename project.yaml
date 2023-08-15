@@ -21,7 +21,8 @@ SecurityScan:
 Deploy:
   skip: true
   agent: myansibleagent
-  environmentList: [dev, uat,prod]
+  environmentList: [dev,uat,prod]
   defaultEnv: dev
+  AnsibleDeploymentThroughAPI: false
   AnsibleRepo: deployment
   AnsibleRepoBranch: main
