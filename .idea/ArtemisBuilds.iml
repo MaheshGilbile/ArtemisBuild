@@ -7,7 +7,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/java/artemisbuilds" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="jdk" jdkName="openjdk-17" jdkType="JavaSDK" />
@@ -98,6 +97,15 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/jvnet/hudson/plugins/sonar/2.0.1/sonar-2.0.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:2.1" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-all:2.4.12" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy:3.0.16" level="project" />
@@ -156,5 +164,20 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.11.4" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.11.4" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.11.4" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson.plugins:sonar:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.4" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson.main:maven-plugin:1.344" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson.main:maven-agent:1.344" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson.main:maven-interceptor:1.344" level="project" />
+    <orderEntry type="library" name="Maven: classworlds:classworlds:1.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1-rc1" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson:maven2.1-interceptor:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.maven:maven-embedder:2.0.4" level="project" />
+    <orderEntry type="library" name="Maven: org.jvnet.hudson:wagon-webdav:1.0-beta-2-hudson-1" level="project" />
+    <orderEntry type="library" name="Maven: slide:slide-webdavlib:2.1" level="project" />
+    <orderEntry type="library" name="Maven: de.zeigermann.xml:xml-im-exporter:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.maven.wagon:wagon-provider-api:1.0-beta-2" level="project" />
+    <orderEntry type="library" name="Maven: org.easytesting:fest-assert:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.easytesting:fest-util:1.1.6" level="project" />
   </component>
 </module>
